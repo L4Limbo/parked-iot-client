@@ -2,12 +2,10 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": "14.x"
-  },
   "scripts": {
-    "dev": "node build/dev-server.js",
-    "build": "node build/build.js",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
     "start": "node server.js"
   },
   "dependencies": {
