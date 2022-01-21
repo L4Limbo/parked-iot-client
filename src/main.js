@@ -4,6 +4,15 @@ import router from './routes/routes'
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import vuetify from "@/plugins/vuetify"
+import * as VueGoogleMaps from "vue2-google-maps"
+
+console.log('here',process.env.MAP_KEY)
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: process.env.VUE_APP_MAP_KEY,
+    libraries: "places"
+  }
+});
 
 Vue.use(Vuetify);
 

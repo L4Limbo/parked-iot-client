@@ -36,8 +36,8 @@
         <br>
         <v-row 
           justify="center"
-        >
-          <v-btn
+        > 
+          <v-btn to="/parked"
           class="mr white--text"
           block
           outline
