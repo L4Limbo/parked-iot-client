@@ -1,6 +1,9 @@
 <template>
   <div>
         Profile Vue -> Fields soon
+        <h3>
+        <strong>{{currentUser.username}}</strong> Profile
+      </h3>
   </div>
 </template>
 
@@ -18,10 +21,14 @@ export default {
     }
   },
   mounted() {
-
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
   },
   computed: {
-
+    currentUser() {
+      return this.$store.state.auth.user;
+    }
   },
   methods: {
 

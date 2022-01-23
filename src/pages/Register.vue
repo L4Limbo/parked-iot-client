@@ -27,14 +27,14 @@
         >
           <v-text-field
             v-model="password"
-            type='password'
+            type='user.password'
             label="Password"
             hint="At least 8 characters"
             required
           ></v-text-field>
         </v-row>
 
-        <v-row 
+        <!-- <v-row 
           justify="center"
         >
           <v-text-field
@@ -44,7 +44,7 @@
             hint="Passwords must match"
             required
           ></v-text-field>
-        </v-row>
+        </v-row> -->
 
         <br>
         <v-row 
@@ -56,6 +56,7 @@
           outline
           x-large
           color="rgba(0,32,96,255)"
+          @click="handleRegister"
           >
             Register
           </v-btn>
@@ -75,6 +76,8 @@
 
 <script>
 import VLogoBanner from '../components/vLogoBanner.vue';
+import User from '../models/User.js';
+import axios from 'axios';
 
 export default {
   components: {
@@ -85,18 +88,52 @@ export default {
   },
   data() {
     return {
-      email:"",
-      password:""
+      user: new User('', '', ''),
+      submitted: false,
+      successful: false,
+      message: '',
+      email:'',
+      password:''
     }
   },
   mounted() {
-
+    if (this.loggedIn) {
+      this.$router.push('/parked');
+    }
   },
   computed: {
-
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    }
   },
   methods: {
-
+    handleRegister() {
+      this.message = '';
+      this.submitted = true;
+      // this.$validator.validate().then(isValid => {
+        alert("HI");
+        alert(this.email);
+        return axios.post('https://parked-iot-project.herokuapp.com/' + 'usersign/register', {
+          username: this.email,
+          email: this.email,
+          password: this.password
+        })
+        // if (isValid) {
+        //   this.$store.dispatch('auth/register', this.user).then(
+        //     data => {
+        //       this.message = data;
+        //     },
+        //     error => {
+        //       this.message =
+        //         (error.response && error.response.data) ||
+        //         error.message ||
+        //         error.toString();
+        //       this.successful = false;
+        //     }
+        //   );
+        // }
+      // });
+    }
   },
   watch: {
 

@@ -1,12 +1,14 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './routes/routes'
+import Vue from 'vue';
+import App from './App.vue';
+import router from './routes/routes';
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
-import vuetify from "@/plugins/vuetify"
-import * as VueGoogleMaps from "vue2-google-maps"
+import vuetify from "@/plugins/vuetify";
+import * as VueGoogleMaps from "vue2-google-maps";
+import VeeValidate from 'vee-validate';
 
-console.log('here',process.env.MAP_KEY)
+Vue.use(VeeValidate);
+
 Vue.use(VueGoogleMaps, {
   load: {
     key: process.env.VUE_APP_MAP_KEY,

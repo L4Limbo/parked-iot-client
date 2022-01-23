@@ -15,7 +15,7 @@
           justify="center"
         >
           <v-text-field
-            v-model="email"
+            v-model="user.email"
             :rules="emailRules"
             label="E-mail"
             required
@@ -26,7 +26,7 @@
           justify="center"
         >
           <v-text-field
-            v-model="password"
+            v-model="user.password"
             type='password'
             label="Password"
             hint="At least 8 characters"
@@ -37,12 +37,14 @@
         <v-row 
           justify="center"
         > 
-          <v-btn to="/parked"
+         <!-- to="/parked" -->
+          <v-btn 
           class="mr white--text"
           block
           outline
           x-large
           color="rgba(0,32,96,255)"
+          @click="handleLogin"
           >
             Log in
           </v-btn>
@@ -62,6 +64,7 @@
 
 <script>
 import VLogoBanner from '../components/vLogoBanner.vue';
+import User from '../models/User.js'
 
 export default {
   components: {
@@ -72,18 +75,49 @@ export default {
   },
   data() {
     return {
-      email:"",
-      password:""
+      user: new User('', ''),
+      loading: false,
+      message: ''
     }
   },
   mounted() {
 
   },
   computed: {
-
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    } 
+  },
+  created() {
+    if (this.loggedIn) {
+      this.$router.push('/profile');
+    }
   },
   methods: {
+    handleLogin() {
+      this.loading = true;
+      this.$validator.validateAll().then(isValid => {
+        if (!isValid) {
+          this.loading = false;
+          return;
+        }
 
+        if (this.user.username && this.user.password) {
+          this.$store.dispatch('auth/login', this.user).then(
+            () => {
+              this.$router.push('/profile');
+            },
+            error => {
+              this.loading = false;
+              this.message =
+                (error.response && error.response.data) ||
+                error.message ||
+                error.toString();
+            }
+          );
+        }
+      });
+    }
   },
   watch: {
 

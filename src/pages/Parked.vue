@@ -1,5 +1,8 @@
 <template>
   <v-col>
+    <!-- <h3>
+        <strong>{{currentUser.username}}</strong> Profile
+      </h3> -->
       <div>
     <div>
       <h2>Vue Js Search and Add Marker</h2>
@@ -48,10 +51,17 @@ export default {
       existingPlace: null
     };
   },
+  computed: {
+    currentUser() {
+      return this.$store.state.auth.user;
+    }
+  },
   mounted() {
+    if (!this.currentUser) {
+      this.$router.push('/login');
+    }
     this.locateGeoLocation();
   },
- 
   methods: {
     initMarker(loc) {
       this.existingPlace = loc;
