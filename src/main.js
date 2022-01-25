@@ -4,6 +4,7 @@ import router from './routes/routes';
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import vuetify from "@/plugins/vuetify";
+import store from './store';
 import * as VueGoogleMaps from "vue2-google-maps";
 import VeeValidate from 'vee-validate';
 
@@ -24,5 +25,6 @@ new Vue({
   el: '#app',
   vuetify,
   router,
+  store,
   render: h => h(App),
 }).$mount('#app');

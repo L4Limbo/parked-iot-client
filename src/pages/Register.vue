@@ -4,6 +4,7 @@
     <v-row class="justify-center">
       <v-logo-banner/>
     </v-row>
+    
     <br>
     <v-row class="justify-center">
       <v-form
@@ -27,24 +28,28 @@
         >
           <v-text-field
             v-model="password"
-            type='user.password'
             label="Password"
-            hint="At least 8 characters"
+            :rules="passwordRules"
+            :append-icon="pswVisibility ? 'visibility' : 'visibility_off'"
+            @click:append="() => (pswVisibility = !pswVisibility)"
+            :type="pswVisibility ? 'password' : 'text'"
             required
           ></v-text-field>
         </v-row>
 
-        <!-- <v-row 
+        <v-row 
           justify="center"
         >
           <v-text-field
-            v-model="passwordConfirm"
-            type='password'
-            label="Repeat Password"
-            hint="Passwords must match"
+            v-model="passwordConf"
+            label="Confirm Password"
+            :rules="passwordConfRules"
+            :append-icon="pswCVisibility ? 'visibility' : 'visibility_off'"
+            @click:append="() => (pswCVisibility = !pswCVisibility)"
+            :type="pswCVisibility ? 'password' : 'text'"
             required
           ></v-text-field>
-        </v-row> -->
+        </v-row>
 
         <br>
         <v-row 
@@ -56,7 +61,7 @@
           outline
           x-large
           color="rgba(0,32,96,255)"
-          @click="handleRegister"
+          @click="validateForm"
           >
             Register
           </v-btn>
@@ -77,23 +82,37 @@
 <script>
 import VLogoBanner from '../components/vLogoBanner.vue';
 import User from '../models/User.js';
-import axios from 'axios';
 
 export default {
   components: {
     VLogoBanner
   },
   props: {
-
   },
   data() {
     return {
       user: new User('', '', ''),
       submitted: false,
       successful: false,
+      valid: false,
       message: '',
+      password:'',
+      passwordConf: '',
+      error:'',
+      pswVisibility: String,
+      pswCVisibility: String,
       email:'',
-      password:''
+      emailRules: [
+        v => !!v || 'E-mail is required',
+        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+      ],
+      passwordRules: [
+        v => !!v || 'Password is required',
+        v => (v && v.length >= 6) || 'At least 6 characters'
+      ],
+      passwordConfRules: [
+        v => (v===this.password) || 'Password must match'
+      ]
     }
   },
   mounted() {
@@ -102,41 +121,36 @@ export default {
     }
   },
   computed: {
-    loggedIn() {
-      return this.$store.state.auth.status.loggedIn;
-    }
+    // loggedIn() {
+    //   return this.$store.state.auth.status.loggedIn;
+    // }
   },
   methods: {
+    validateForm() {
+      if (this.$refs.form.validate()) {
+          this.handleRegister();
+      } else {
+        alert("Form is not valid");
+      }
+    },
     handleRegister() {
-      this.message = '';
-      this.submitted = true;
-      // this.$validator.validate().then(isValid => {
-        alert("HI");
-        alert(this.email);
-        return axios.post('https://parked-iot-project.herokuapp.com/' + 'usersign/register', {
-          username: this.email,
-          email: this.email,
-          password: this.password
+      // var auth = new AuthService('/usersign/register/');
+      let data = new FormData();
+      data.append('username', this.email);
+      data.append('email', this.email);
+      data.append('password', this.password);
+      this.$store.dispatch('auth/register', data).then(response =>
+        {
+          this.message = response;
+          this.$emit('alert', ['success',"Your account is ready. You can now Login"])
+          this.$router.push('/login')
+        }).catch((err)=>{
+          this.error = err;    
+          this.$emit('alert', ['error', "Something went wrong. This email is already used"]);
         })
-        // if (isValid) {
-        //   this.$store.dispatch('auth/register', this.user).then(
-        //     data => {
-        //       this.message = data;
-        //     },
-        //     error => {
-        //       this.message =
-        //         (error.response && error.response.data) ||
-        //         error.message ||
-        //         error.toString();
-        //       this.successful = false;
-        //     }
-        //   );
-        // }
-      // });
     }
   },
   watch: {
-
   }
 }
 </script>
