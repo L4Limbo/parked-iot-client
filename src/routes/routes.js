@@ -1,6 +1,6 @@
 import VueRouter from "vue-router";
 import Vue from "vue";
-import Home from "@/pages/Home"
+// import Home from "@/pages/Home"
 import Login from "@/pages/Login"
 import Register from "@/pages/Register"
 import Profile from "@/pages/Profile"
@@ -12,7 +12,7 @@ Vue.use(VueRouter);
 let routes = [
     {
         path: '/',
-        component: Home
+        component: Login
     },
 
     {

@@ -1,90 +1,125 @@
 <template>
   <v-col>
-    <!-- <h3>
-        <strong>{{currentUser.username}}</strong> Profile
-      </h3> -->
+    
+    <router-link to="/profile">
+        <strong>{{currentUser.username}}</strong>
+      </router-link>
       <div>
-    <div>
-      <h2>Vue Js Search and Add Marker</h2>
-
-      <label>
-        <gmap-autocomplete @place_changed="initMarker"></gmap-autocomplete>
-
-        <button @click="addLocationMarker">Add</button>
-      </label>
-      <br/>
- 
-    </div>
     <br>
-    <gmap-map
-        :zoom="14"    
-        :center="center"
-        style="width:100%;  height: 600px;"
-      >
+    <GmapMap
+      @zoom_changed="getCurrentZoom"
+      @center_changed="getCurrentCenter"
+      :draggable="true"
+      :options="{
+      zoomControl: true}"
+      ref="map"
+      zoomControl="true"
+      :zoom.sync="zoom"    
+      :center="{ 
+        lat: 38.26030427395903,
+        lng: 21.744173387859256
+      }"
+      style="width:100%;  height: 600px;"
+    >
       <gmap-marker
         :key="index"
-        v-for="(m, index) in locationMarkers"
-        :position="m.position"
-        @click="center=m.position"
+        v-for="(gmp, index) in locations"
+        :position="gmp"
+        :label="gmp.label"
       ></gmap-marker>
-    </gmap-map>
+    </GmapMap>
   </div>
+  <v-row class="justify-center">
+      <v-logo-banner/>
+    </v-row>
   </v-col>
 </template>
 
 <script>
+import VLogoBanner from '../components/vLogoBanner.vue';
+import Api from '../api/api';
+// import {gmapApi} from 'vue2-google-maps';
+
 export default {
   components: {
-
+    VLogoBanner
   },
   props: {
 
   },
   data() {
     return {
+      getMarkersWait: false,
+      zoom: 5,
       center: { 
-        lat: 39.7837304,
-        lng: -100.4458825
+        lat: 38.26030427395903,
+        lng: 21.744173387859256
       },
       locationMarkers: [],
       locPlaces: [],
-      existingPlace: null
+      existingPlace: null,
+      locations: [],
+      test: '',
+      currentCenterLat: 38.26030427395903,
+      currentCenterLng: 21.744173387859256,
     };
   },
   computed: {
     currentUser() {
       return this.$store.state.auth.user;
-    }
+    },
   },
   mounted() {
     if (!this.currentUser) {
       this.$router.push('/login');
     }
-    this.locateGeoLocation();
+    this.createMarkers()
+    //  this.setLocationLatLng();
+    // this.locateGeoLocation();
   },
   methods: {
-    initMarker(loc) {
-      this.existingPlace = loc;
+    getCurrentZoom(event){
+      this.zoom = event
     },
-    addLocationMarker() {
-      if (this.existingPlace) {
-        const marker = {
-          lat: this.existingPlace.geometry.location.lat(),
-          lng: this.existingPlace.geometry.location.lng()
-        };
-        this.locationMarkers.push({ position: marker });
-        this.locPlaces.push(this.existingPlace);
-        this.center = marker;
-        this.existingPlace = null;
-      }
+    getCurrentCenter(event){
+      this.test = Object.keys(event)
+      this.currentCenterLat = event.lat()
+      this.currentCenterLng = event.lng()
+      this.createMarkers();
     },
-    locateGeoLocation: function() {
+    locateGeoLocation() {
       navigator.geolocation.getCurrentPosition(res => {
         this.center = {
           lat: res.coords.latitude,
           lng: res.coords.longitude
         };
       });
+    },
+    createMarkers() {
+      if (!this.getMarkersWait) {
+        this.locations = []
+        setTimeout(this.getMarkers(), 1000);
+        this.getMarkersWait = true;
+        setTimeout(() => { this.getMarkersWait = false }, 200)
+      }
+    },
+    getMarkers() {
+      var data = new FormData();
+      data.append('gpsLong', this.currentCenterLng);
+      data.append('gpsLat', this.currentCenterLat);
+      Api.post(data, 'spots/available/').then((response)=>{
+        this.test = response;
+        var spots = response.data;
+        for(var i in spots) {
+          Object.defineProperty(spots[i], 'lng',
+          Object.getOwnPropertyDescriptor(spots[i], 'long'));
+          delete spots[i]['long'];
+          this.locations.push(spots[i])
+        }
+        this.test = spots
+      }).catch((err) => {
+        this.test = err;
+      })
     }
   }
 };
