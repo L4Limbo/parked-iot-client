@@ -1,6 +1,5 @@
 <template>
   <v-column>
-    <br><br>
     <v-row class="justify-center">
       <v-logo-banner/>
     </v-row>
@@ -22,7 +21,6 @@
             required
           ></v-text-field>
         </v-row>
-
         <v-row 
           justify="center"
         >
@@ -117,13 +115,13 @@ export default {
   },
   mounted() {
     if (this.loggedIn) {
-      this.$router.push('/parked');
+      this.$router.push('/profile');
     }
   },
   computed: {
-    // loggedIn() {
-    //   return this.$store.state.auth.status.loggedIn;
-    // }
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    }
   },
   methods: {
     validateForm() {
@@ -134,7 +132,6 @@ export default {
       }
     },
     handleRegister() {
-      // var auth = new AuthService('/usersign/register/');
       let data = new FormData();
       data.append('username', this.email);
       data.append('email', this.email);

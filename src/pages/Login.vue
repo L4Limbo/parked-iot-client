@@ -1,9 +1,9 @@
 <template>
   <v-column>
-    <br><br>
     <v-row class="justify-center">
       <v-logo-banner/>
     </v-row>
+    
     <br>
     <v-row class="justify-center">
       <v-form
@@ -15,7 +15,7 @@
           justify="center"
         >
           <v-text-field
-            v-model="user.email"
+            v-model="email"
             :rules="emailRules"
             label="E-mail"
             required
@@ -26,27 +26,28 @@
           justify="center"
         >
           <v-text-field
-            v-model="user.password"
-            type='password'
+            v-model="password"
             label="Password"
-            hint="At least 8 characters"
+            :rules="passwordRules"
+            :append-icon="pswVisibility ? 'visibility' : 'visibility_off'"
+            @click:append="() => (pswVisibility = !pswVisibility)"
+            :type="pswVisibility ? 'password' : 'text'"
             required
           ></v-text-field>
         </v-row>
         <br>
         <v-row 
           justify="center"
-        > 
-         <!-- to="/parked" -->
-          <v-btn 
+        >
+          <v-btn
           class="mr white--text"
           block
           outline
           x-large
           color="rgba(0,32,96,255)"
-          @click="handleLogin"
+          @click="validateForm"
           >
-            Log in
+            Login
           </v-btn>
         </v-row>
       </v-form>
@@ -56,7 +57,7 @@
         justify="center"
       >
       <v-item class="caption">
-        <router-link to="/register">Don't have an account? </router-link>
+        <router-link to="/register">You don't have an account? </router-link>
       </v-item>
       </v-row>
     </v-column>
@@ -64,63 +65,72 @@
 
 <script>
 import VLogoBanner from '../components/vLogoBanner.vue';
-import User from '../models/User.js'
+import User from '../models/User.js';
 
 export default {
   components: {
     VLogoBanner
   },
   props: {
-
   },
   data() {
     return {
-      user: new User('', ''),
-      loading: false,
-      message: ''
+      user: new User('', '', ''),
+      submitted: false,
+      successful: false,
+      valid: false,
+      message: '',
+      password:'',
+      error:'',
+      pswVisibility: String,
+      pswCVisibility: String,
+      email:'',
+      emailRules: [
+        v => !!v || 'E-mail is required',
+        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+      ],
+      passwordRules: [
+        v => !!v || 'Password is required',
+        v => (v && v.length >= 6) || 'At least 6 characters'
+      ]
     }
-  },
-  mounted() {
-
-  },
-  computed: {
-    loggedIn() {
-      return this.$store.state.auth.status.loggedIn;
-    } 
   },
   created() {
     if (this.loggedIn) {
       this.$router.push('/profile');
     }
   },
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
+    }
+  },
   methods: {
+    validateForm() {
+      if (this.$refs.form.validate()) {
+          this.handleLogin();
+      } else {
+        alert("Form is not valid");
+      }
+    },
     handleLogin() {
-      this.loading = true;
-      this.$validator.validateAll().then(isValid => {
-        if (!isValid) {
-          this.loading = false;
-          return;
-        }
-
-        if (this.user.username && this.user.password) {
-          this.$store.dispatch('auth/login', this.user).then(
-            () => {
-              this.$router.push('/profile');
-            },
-            error => {
-              this.loading = false;
-              this.message =
-                (error.response && error.response.data) ||
-                error.message ||
-                error.toString();
-            }
-          );
-        }
-      });
+      let data = {
+        username: this.email,
+        email: this.email,
+        password: this.password
+      }
+      this.$store.dispatch('auth/login', data).then(response =>
+        {
+          this.message = response;
+          this.$emit('alert', ['success',"Welcome!"])
+          this.$router.push('/profile')
+        }).catch((err)=>{
+          this.error = err;    
+          this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
+        })
     }
   },
   watch: {
-
   }
 }
 </script>

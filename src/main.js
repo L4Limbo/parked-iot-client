@@ -6,7 +6,7 @@ import "vuetify/dist/vuetify.min.css";
 import vuetify from "@/plugins/vuetify";
 import store from './store';
 import * as VueGoogleMaps from "vue2-google-maps";
-import VeeValidate from 'vee-validate';
+import  * as VeeValidate from 'vee-validate';
 
 Vue.use(VeeValidate);
 
