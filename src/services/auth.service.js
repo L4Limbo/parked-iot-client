@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// const API_URL = process.env.VUE_APP_API_URL;
+const API_URL = 'https://parked-iot-project.herokuapp.com/'
 
 class AuthService {
   logout() {
@@ -10,12 +10,11 @@ class AuthService {
   login(user) {
     console.log('login')
     console.log(user)
-    console.log(process.env.VUE_APP_API)
     let data = new FormData();
     data.append('username', user.username);
     data.append('email', user.username);
     data.append('password', user.password); 
-    return axios.post('usersign/login/', data).then((response) => {
+    return axios.post(API_URL + 'usersign/login/', data).then((response) => {
       if(response.data.token) {
         var user = {
           username: data.get('username'),
@@ -34,7 +33,7 @@ class AuthService {
   }
 
   register(data) {
-    return axios.post('usersign/register/', data);
+    return axios.post(API_URL + 'usersign/register/', data);
   }
 }
 
