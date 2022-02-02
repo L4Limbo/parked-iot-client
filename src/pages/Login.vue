@@ -111,6 +111,7 @@ export default {
           this.handleLogin();
       } else {
         alert("Form is not valid");
+        this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
       }
     },
     handleLogin() {
@@ -122,14 +123,13 @@ export default {
       this.$store.dispatch('auth/login', data).then(response =>
         {
           this.message = response;
-          if (this.message) {
+          if (this.message.token) {
             this.$emit('alert', ['success',"Welcome!"])
             this.$router.push('/parked')
           }
           else {
-            this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
+            this.$emit('alert', ['error', "Username or Password does not exist"]);
           }
-          
         }).catch((err)=>{
           this.error = err;    
           this.$emit('alert', ['error', "Something went wrong. Please, try again"]);

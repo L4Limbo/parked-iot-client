@@ -69,7 +69,10 @@
 
                 <gmap-marker
                   :position="currentDevicePos"
-                  icon="https://img.icons8.com/emoji/24/000000/blue-circle-emoji.png"
+                  :icon="{
+                    url:'https://img.icons8.com/emoji/24/000000/blue-circle-emoji.png',
+                    scaledSize: {width: 1*zoom, height: 1*zoom}
+                  }"
                 >
                 </gmap-marker>
 
@@ -338,12 +341,18 @@ export default {
         this.test = response;
         var spots = response.data;
         for(var i in spots) {
+          spots[i]['id'] = i
           if(spots[i]['status'] == "unknown") {
-            spots[i]['id'] = i
-            spots[i]['icon'] = "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+            spots[i]['icon'] = {
+              url: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
           }
           else {
-            spots[i]['icon'] = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+            spots[i]['icon'] = {
+              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
           }
           spots[i]['lat'] = Number(spots[i]['lat'])
           spots[i]['lng'] = Number(spots[i]['lng'])
@@ -356,11 +365,25 @@ export default {
     openInfoWindowTemplate(index) {
       this.test = index
       this.Paction = true;
-      this.locations[index].icon = "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+      this.locations[index].icon = {
+              url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
       this.selectedParkingSpot = this.locations[index];
       for(var i in this.locations) {
         if(i != index) {
-          this.locations[i].icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          if(this.locations[i].status == "unknown") {
+            this.locations[i].icon = {
+              url: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
+          }
+          else {
+            this.locations[i].icon= {
+              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
+          }
         }
       }
       var {lat,lng,ramp,type,dist, status} = this.locations[index];
@@ -395,7 +418,18 @@ export default {
       this.infoWindow.open = false;
       this.selectedParkingSpot = {};
       for(var i in this.locations) {
-        this.locations[i].icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        if(this.locations[i].status == "unknown") {
+            this.locations[i].icon = {
+              url: "http://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
+        }
+        else {
+          this.locations[i].icon= {
+              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+              scaledSize: {width: 2*this.zoom, height: 2*this.zoom}
+            }
+        }
       }
     },
     logOut() {
