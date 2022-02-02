@@ -439,7 +439,7 @@ export default {
     BookSpot() {
       var data = new FormData();
       data.append('gps_lat', this.currentDevicePos.lat);
-      data.append('gps_long', this.currentDevicePos.long);
+      data.append('gps_long', this.currentDevicePos.lng);
       data.append('spot_id', Number(this.selectedParkingSpot.id));
 
       Api.post(data, 'spots/save/').then((response)=>{
