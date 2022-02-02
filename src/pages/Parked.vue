@@ -46,6 +46,7 @@
                   fullscreenControl: true,
                   disableDefaultUi: false
                 }"
+                myLocationEnabled = "true"
                 ref="map"
                 zoomControl="true"
                 :zoom.sync="zoom"    
@@ -53,7 +54,7 @@
                   lat: 38.26030427395903,
                   lng: 21.744173387859256
                 }"
-                style="width:100%;  height: 83vh;"
+                style="width:100%;  height: 85vh;"
               >
                 <gmap-marker
                   :key="index"
@@ -63,6 +64,12 @@
                   :clickable="true"
                   @click="openInfoWindowTemplate(index)"
                   :icon="gmp.icon"
+                >
+                </gmap-marker>
+
+                <gmap-marker
+                  :position="currentDevicePos"
+                  icon="https://img.icons8.com/emoji/24/000000/blue-circle-emoji.png"
                 >
                 </gmap-marker>
 
@@ -101,7 +108,7 @@
           </v-row>
           <br>
           <v-row justify="space-around" no-gutters>
-            <v-btn :disabled="Paction == false" color="primary" elevation="12" fab small>
+            <v-btn @click="BookSpot"  :disabled="Paction == false" color="primary" elevation="12" fab small>
               <v-icon>mdi-parking</v-icon>
             </v-btn>
           </v-row>
@@ -139,7 +146,7 @@
               <v-icon color="white">mdi-shopping</v-icon>
           </v-btn>
 
-          <v-btn >
+          <v-btn @click="logOut">
             <span>Logout</span>
             <v-icon color="white">mdi-logout-variant</v-icon>
           </v-btn>
@@ -205,18 +212,18 @@
 </template>
 
 <script>
-// import vLogoFooter from '../components/vLogoFooter.vue';
 import Api from '../api/api';
 
 export default {
+  name: 'Parked',
   components: {
-    // vLogoFooter
   },
   props: {
 
   },
   data() {
     return {
+      currentDevicePos:{},
       selectedParkingSpot: {},
       Paction: false,
       infoWindow: {
@@ -266,12 +273,19 @@ export default {
     }
     this.createMarkers()
     this.locateGeoLocation();
+
+    this.$nextTick(function () {
+        window.setInterval(() => {
+          this.getDevicePos();
+        },2500);
+    })
   },
   methods: {
     setPlace(place) {
       this.$refs.map.$mapPromise.then((map) => {
         map.panTo({lat: place.geometry.location.lat(), lng: place.geometry.location.lng()})
-        })
+      })
+      this.zoom = 18;
     },
     getCurrentZoom(event){
       this.zoom = event
@@ -280,6 +294,14 @@ export default {
       this.currentCenterLat = event.lat()
       this.currentCenterLng = event.lng()
       this.createMarkers();
+    },
+    getDevicePos(){
+      navigator.geolocation.getCurrentPosition(res => {
+        this.currentDevicePos  = {
+          lat: res.coords.latitude,
+          lng: res.coords.longitude
+        };
+      });
     },
     locateGeoLocation() {
       navigator.geolocation.getCurrentPosition(res => {
@@ -290,7 +312,9 @@ export default {
         this.$refs.map.$mapPromise.then((map) => {
         map.panTo({lat: res.coords.latitude, lng: res.coords.longitude})
         })
+        this.currentDevicePos = this.center;
       });
+      this.zoom = 18;
     },
     createMarkers() {
       if (!this.getMarkersWait) {
@@ -307,12 +331,22 @@ export default {
       var data = new FormData();
       data.append('gpsLong', this.currentCenterLng);
       data.append('gpsLat', this.currentCenterLat);
+      data.append('ramp', this.ramp);
+      data.append('typeVeh', this.car);
+      data.append('maxDist', this.distance);
       Api.post(data, 'spots/available/').then((response)=>{
         this.test = response;
         var spots = response.data;
         for(var i in spots) {
-          spots[i]['icon'] = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-          spots[i]['id'] = i
+          if(spots[i]['status'] == "unknown") {
+            spots[i]['id'] = i
+            spots[i]['icon'] = "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"
+          }
+          else {
+            spots[i]['icon'] = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          }
+          spots[i]['lat'] = Number(spots[i]['lat'])
+          spots[i]['lng'] = Number(spots[i]['lng'])
           this.locations.push(spots[i])
         }
       }).catch((err) => {
@@ -329,8 +363,8 @@ export default {
           this.locations[i].icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
         }
       }
-      var {lat,lng,ramp,type,dist} = this.locations[index];
-      
+      var {lat,lng,ramp,type,dist, status} = this.locations[index];
+      dist = parseInt(Number(dist) * 1000)
       this.infoWindow.position = { lat: lat, lng: lng}
       if (ramp == 0) {
         ramp = 'Available'
@@ -350,7 +384,10 @@ export default {
       }
 
       this.test = {lat,lng,ramp,type,dist}
-      this.infoWindow.template = `<b> Ramp:</b> ${ramp}<br><b>Distance:</b> ${dist} meters<br><b>Car Type:</b> ${type}<br>`
+      this.infoWindow.template = `<b> Ramp:</b> ${ramp}<br>
+        <b>Distance:</b> ${dist} meters<br>
+        <b>Car Type:</b> ${type}<br>
+        <b>Status:</b> ${status.charAt(0).toUpperCase() + status.slice(1)}<br> `
       this.infoWindow.open = true
     },
     closeWindowInfo() {
@@ -360,9 +397,36 @@ export default {
       for(var i in this.locations) {
         this.locations[i].icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
       }
+    },
+    logOut() {
+      this.$store.dispatch('auth/logout');
+      this.$router.push('/login');
+    },
+    BookSpot() {
+      var data = new FormData();
+      data.append('gps_lat', this.currentDevicePos.lat);
+      data.append('gps_long', this.currentDevicePos.long);
+      data.append('spot_id', Number(this.selectedParkingSpot.id));
+
+      Api.post(data, 'spots/save/').then((response)=>{
+        this.test = response;
+        if(response.data.status == "Wrong Coordinates") {
+          this.$emit('alert', ['warning',"You are too far away"]);
+        }
+        if(response.data.status == "OK") {
+          this.$emit('alert', ['success',"Spot has been occupied successfully!"]);
+        }
+        
+      }).catch((err) => {
+        this.test = err;
+        this.$emit('alert', ['error',"Something went wrong. Please, try again"]);
+      })
     }
   },
   watch: {
+    openFilters() {
+      this.createMarkers();
+    }
   }
 };
 </script>

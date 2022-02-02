@@ -97,7 +97,7 @@ export default {
   },
   created() {
     if (this.loggedIn) {
-      this.$router.push('/profile');
+      this.$router.push('/parked');
     }
   },
   computed: {
@@ -124,7 +124,7 @@ export default {
           this.message = response;
           if (this.message) {
             this.$emit('alert', ['success',"Welcome!"])
-            this.$router.push('/profile')
+            this.$router.push('/parked')
           }
           else {
             this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
