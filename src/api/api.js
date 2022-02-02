@@ -9,6 +9,9 @@ class Api {
     post(data, url) {
         return axios.post(API_URL + url, data)
     }
+    upload(data, url) {
+        return axios.post(API_URL + url, data)
+    }
 }
 
 export default new Api();
