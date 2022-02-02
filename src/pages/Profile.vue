@@ -51,7 +51,7 @@
                 append-icon="mdi-camera"
                 prepend-icon=""
                 show-size
-                truncate-length="30"
+                truncate-length="4"
                 placeholder="Upload Blue Card"
                 dense
                 chips
@@ -155,14 +155,21 @@ export default {
 		uploadFile() {
 			if (this.blueCard) {
 				var data = new FormData();
-				data.append("file", this.encodedFile)
-				Api.upload(data, 'usersign/login/').then((response)=>
+				data.append("image", this.encodedFile)
+        data.append("email", this.$store.state.auth.user.username);
+        data.append("password", this.$store.state.auth.user.password);
+				Api.upload(data, 'usersign/card/').then((response)=>
 					{
 						this.message = response;
-						if(!this.message) {
-							this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
-						}
-						this.$emit('alert', ['success',"File Uploaded Successfully"])
+            if (!this.message.data.status) {
+              this.$emit('alert', ['error',"Something went wrong. Please, try again"])
+            }
+						else if (this.message.data.status == 'Image saved') {
+							this.$emit('alert', ['success', "Your blue card has been uploaded!"]);
+						} else {
+              this.$emit('alert', ['error',"Something went wrong. Please, try again"])
+            }
+        
 					}).catch((err)=>{
           this.error = err;    
           this.$emit('alert', ['error', "Something went wrong. Please, try again"]);
@@ -178,7 +185,7 @@ export default {
 		{
   this.encodedFile = event.target.result
     }
-    reader.readAsDataURL (file)
+    reader.readAsDataURL(file)
 		}
 	}
 };
@@ -187,6 +194,7 @@ export default {
 <style lang="scss" scoped>
 .v-input.v-input--dense.theme--light.v-text-field.v-text-field--single-line.v-text-field--solo.v-text-field--filled.v-text-field--is-booted.v-text-field--enclosed.v-file-input{
       width: 65vw;
+      max-width: 200px;
 }
 .profileB{
     margin:0;
